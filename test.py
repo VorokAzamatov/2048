@@ -1,15 +1,9 @@
-list = [[5, 8], [6, 9]]
+dict = {(10, 10): 2, "2": 2}
 
-for i in range(0, 2):
-    list[i][0] -= 1
-    list[i][1] -= 1
+del dict["2"]
 
-for x, y in list:
-    x -= 1
-    y -= 1
-
-print(list)
-
+for i in dict:
+    print(i)
 
 
 # segment_size = 150
