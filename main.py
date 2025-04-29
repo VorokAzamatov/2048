@@ -15,10 +15,10 @@ class Segments(object):
         self.segments = []
         for i in range(1, screen_height // self.segment_size + 1):
             for k in range(1, screen_width // self.segment_size + 1):
-                current = [
+                current = (
                     self.segment_margin * k + self.segment_size * (k - 1),
                     self.segment_margin * i + self.segment_size * (i - 1),
-                ]
+                )
                 self.segments.append(current)
 
     def segments_draw(self, screen):
@@ -29,56 +29,99 @@ class Segments(object):
 class PlayableSegments(Segments):
     def __init__(self):
         super().__init__(segment_color = "#ECE5DB")
-        self.active_segments = [ self.segments[random.randrange(len(self.segments))], self.segments[random.randrange(len(self.segments))] ]
+        self.active_segments = {
+            tuple(self.segments[random.randrange(len(self.segments))]) : 2,
+            tuple(self.segments[random.randrange(len(self.segments))]) : 2
+        }
         # self.active_segments = [ self.segments[10], self.segments[2] ]
-        self.x, self.y = None, None
         self.direction = None
 
     def move(self):
-        for i in range(0, len(self.active_segments)):
+        new_active_segments = {}
+        # print("---------------")
+        # print("all segments: ", segments_to_move)
+        for segment, value in self.active_segments.items():
             segments_without_current = self.active_segments.copy()
-            del segments_without_current[i]
+            del segments_without_current[segment]
+            # print("segments_without_current: ", segments_without_current)
 
-
-            self.x, self.y = self.active_segments[i]
+            x, y = segment
+            # print("x, y: ", new_x, new_y)
             if self.direction == 'up':
-                bump = False
-                while not bump:
-                    if self.y > 10 and [self.x, self.y - SEGMENT_STEP] not in segments_without_current:
-                        self.y -= SEGMENT_STEP
-                    else:
-                        bump = True
+                new_y = y
+                while new_y > SEGMENT_MARGIN:
+                    new_y -= SEGMENT_STEP
+                    potential_position = (x, new_y)
+                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
+                        value *= 2
+                        break
+                    elif potential_position in self.active_segments:
+                        new_y += SEGMENT_STEP
+                        break
+                new_active_segments[(x, new_y)] = value
             elif self.direction == 'down':
-                bump = False
-                while not bump:
-                    if self.y < 490 and [self.x, self.y + SEGMENT_STEP] not in segments_without_current:
-                        self.y += SEGMENT_STEP
-                    else:
-                        bump = True
+                new_y = y
+                while new_y < screen_height - SEGMENT_SIZE - SEGMENT_MARGIN:
+                    new_y += SEGMENT_STEP
+                    potential_position = (x, new_y)
+                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
+                        value *= 2
+                        break
+                    elif potential_position in self.active_segments:
+                        new_y -= SEGMENT_STEP
+                        break
+                new_active_segments[(x, new_y)] = value
             elif self.direction == 'left':
-                bump = False
-                while not bump:
-                    if self.x > 10 and [self.x - SEGMENT_STEP, self.y] not in segments_without_current:
-                        self.x -= SEGMENT_STEP
-                    else:
-                        bump = True
+                new_x = x
+                while new_x > SEGMENT_MARGIN:
+                    new_x -= SEGMENT_STEP
+                    potential_position = (new_x, y)
+                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
+                        value *= 2
+                        break
+                    elif potential_position in self.active_segments:
+                        new_x += SEGMENT_STEP
+                        break
+                new_active_segments[(new_x, y)] = value
             elif self.direction == 'right':
-                bump = False
-                while not bump:
-                    if self.x < 490 and [self.x + SEGMENT_STEP, self.y] not in segments_without_current:
-                        self.x += SEGMENT_STEP
-                    else:
-                        bump = True
-            self.active_segments[i][0] = self.x
-            self.active_segments[i][1] = self.y
+                new_x = x
+                while new_x < screen_width - SEGMENT_SIZE - SEGMENT_MARGIN:
+                    new_x += SEGMENT_STEP
+                    potential_position = (new_x, y)
+                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
+                        value *= 2
+                        break
+                    elif potential_position in self.active_segments:
+                        new_x -= SEGMENT_STEP
+                        break
+                new_active_segments[(new_x, y)] = value
+
+        self.active_segments = new_active_segments
+
+
+    def spawn_new_segment(self):
+        available_segments = [segment for segment in self.segments if segment not in self.active_segments]
+        if available_segments:
+            new_segment = random.choice(available_segments)
+            self.active_segments[new_segment] = 2
 
     def merge(self):
         pass
 
     def draw(self, screen):
-        for x, y in self.active_segments:
-            pygame.draw.rect(screen, self.segment_color,
-                         (x, y, self.segment_size, self.segment_size), border_radius=3)
+        for segment in self.active_segments:
+            if self.active_segments[segment] == 2:
+                color = "#ECE5DB"
+            elif self.active_segments[segment] == 4:
+                color = "#EBE0CA"
+            elif self.active_segments[segment] == 8:
+                color = "#E8B482"
+            elif self.active_segments[segment] == 16:
+                color = "#E89A6C"
+            elif self.active_segments[segment] == 32:
+                color = "#E68266"
+            pygame.draw.rect(screen, color,
+                         (*segment, self.segment_size, self.segment_size), border_radius=3)
 
 
 
@@ -100,19 +143,24 @@ def main():
                 running = False
 
 
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_UP]:
-            segments.direction = "up"
-            segments.move()
-        elif keys[pygame.K_DOWN]:
-            segments.direction = "down"
-            segments.move()
-        elif keys[pygame.K_LEFT]:
-            segments.direction = "left"
-            segments.move()
-        elif keys[pygame.K_RIGHT]:
-            segments.direction = "right"
-            segments.move()
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_UP]:
+                segments.direction = "up"
+                segments.move()
+                segments.spawn_new_segment()
+            elif keys[pygame.K_DOWN]:
+                segments.direction = "down"
+                segments.move()
+                segments.spawn_new_segment()
+            elif keys[pygame.K_LEFT]:
+                segments.direction = "left"
+                segments.move()
+                segments.spawn_new_segment()
+            elif keys[pygame.K_RIGHT]:
+                segments.direction = "right"
+                segments.move()
+                segments.spawn_new_segment()
+
 
 
 
