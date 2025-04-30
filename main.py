@@ -52,10 +52,10 @@ class PlayableSegments(Segments):
                 while new_y > SEGMENT_MARGIN:
                     new_y -= SEGMENT_STEP
                     potential_position = (x, new_y)
-                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
-                        value *= 2
-                        break
-                    elif potential_position in self.active_segments:
+                    if potential_position in self.active_segments:
+                        if value == self.active_segments[potential_position]:
+                            value *= 2
+                            break
                         new_y += SEGMENT_STEP
                         break
                 new_active_segments[(x, new_y)] = value
@@ -64,10 +64,10 @@ class PlayableSegments(Segments):
                 while new_y < screen_height - SEGMENT_SIZE - SEGMENT_MARGIN:
                     new_y += SEGMENT_STEP
                     potential_position = (x, new_y)
-                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
-                        value *= 2
-                        break
-                    elif potential_position in self.active_segments:
+                    if potential_position in self.active_segments:
+                        if value == self.active_segments[potential_position]:
+                            value *= 2
+                            break
                         new_y -= SEGMENT_STEP
                         break
                 new_active_segments[(x, new_y)] = value
@@ -76,10 +76,10 @@ class PlayableSegments(Segments):
                 while new_x > SEGMENT_MARGIN:
                     new_x -= SEGMENT_STEP
                     potential_position = (new_x, y)
-                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
-                        value *= 2
-                        break
-                    elif potential_position in self.active_segments:
+                    if potential_position in self.active_segments:
+                        if value == self.active_segments[potential_position]:
+                            value *= 2
+                            break
                         new_x += SEGMENT_STEP
                         break
                 new_active_segments[(new_x, y)] = value
@@ -88,10 +88,10 @@ class PlayableSegments(Segments):
                 while new_x < screen_width - SEGMENT_SIZE - SEGMENT_MARGIN:
                     new_x += SEGMENT_STEP
                     potential_position = (new_x, y)
-                    if potential_position in self.active_segments and value == self.active_segments[potential_position]:
-                        value *= 2
-                        break
-                    elif potential_position in self.active_segments:
+                    if potential_position in self.active_segments:
+                        if value == self.active_segments[potential_position]:
+                            value *= 2
+                            break
                         new_x -= SEGMENT_STEP
                         break
                 new_active_segments[(new_x, y)] = value

@@ -1,0 +1,5 @@
+# created by virtualenv automatically
+.venv
+.idea
+test.py
+2048_OG-logo.jpg
